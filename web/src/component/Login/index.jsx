@@ -17,7 +17,24 @@ function Login() {
 
   const handleSubmit = event => {
     event.preventDefault();
-    // console.log(Username: ${username}, Password: ${password});
+    console.log('fefwefe')
+    fetch("http://localhost:8080/user/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        // handle response data
+      })
+      .catch(error => {
+        // handle error
+      });
   };
 
   return (

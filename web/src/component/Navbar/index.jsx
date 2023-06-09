@@ -13,8 +13,8 @@ export default function NavBar() {
         </div>
       </div>
       <div className="nav-bar-right">
-        <Button onClick={()=> history('/login')}>注册</Button>
-        <Button onClick={()=> history('/register')}>登录</Button>
+        <Button onClick={()=> history('/register')}>注册</Button>
+        <Button onClick={()=> history('/login')}>登录</Button>
         <Button onClick={()=> history('/table')} size="small" variant="contained">
           车位信息
         </Button>
