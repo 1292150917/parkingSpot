@@ -9,7 +9,12 @@ function MyComponent() {
   return (
     <div className="home">
       <div className="home-banner">
-        <img src="https://img0.baidu.com/it/u=713751486,276319268&fm=253&fmt=auto&app=120&f=JPEG?w=1422&h=800" />
+        <p className="home-banner-flex">
+          <img
+            style={{ opacity: 0 }}
+            src="https://img0.baidu.com/it/u=713751486,276319268&fm=253&fmt=auto&app=120&f=JPEG?w=1422&h=800"
+          />
+        </p>
         <div>
           <InputBase />
         </div>

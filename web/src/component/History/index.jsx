@@ -7,10 +7,12 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import fetch from "../../fetch";
 import Button from "@mui/material/Button";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import Drawer from "../../component/Drawer";
+import ReviewForm from "./ReviewForm"
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -32,57 +34,169 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-];
-
-const stackStyle = {
-  display: "flex",
-  justifyContent: "center",
-  marginTop: "16px",
-};
-
+let message = {}
 export default function CustomizedTables() {
+  const [openDialog, setOpenDialog] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const [data, setData] = React.useState([]);
+  const [msgItem, setMsgItem] = React.useState("");
+  const userInfo = sessionStorage.userInfo
+    ? JSON.parse(sessionStorage.userInfo)
+    : {};
+
+  const [index, setIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    fetch("/reserve", {}, res => {
+      res.data.map(item => {
+        if (!item.parking) {
+          item.parking = {};
+        }
+        // 下单人 === 自己
+        item.isCancel = item.user_id == userInfo.id;
+        // 车位人 === 自己
+        item.isRefuse = item.parking.user_id == userInfo.id;
+      });
+      setData(res.data);
+    });
+  }, [index]);
+
+  const stateFun = state => {
+    switch (state) {
+      case "1":
+        return "申请中";
+      case "2":
+        return "拒绝预定";
+      case "3":
+        return "取消预定";
+      case "4":
+        return "同意预定";
+      case "5":
+        return "订单完成";
+
+      default:
+        break;
+    }
+  };
+
+  const updateCommon = (res) => {
+    message = res
+    setOpenDialog(true)
+  };
+
+  const commonClick = (res) => {
+    const data = {
+      ...message,
+      comment: res.comment,
+      state: 5,
+      star: res.rating,
+    };
+    console.log(message)
+    fetch(
+      "/reserve/" + message.id,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+      res => {
+        setIndex(res => res + 1);
+      }
+    );
+  }
+
+  const updateService = (res, state) => {
+    const data = {
+      ...res,
+      state,
+    };
+    var confirmed = window.confirm("确定要执行此操作吗？");
+    if (!confirmed) {
+      return;
+    }
+    fetch(
+      "/reserve/" + res.id,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+      res => {
+        setIndex(res => res + 1);
+      }
+    );
+  };
   return (
     <div style={{ width: "97%", margin: "0 auto" }}>
-      <Button style={{ marginBottom: "10px" }} variant="contained">
-        新增
-      </Button>
+      <div style={{height: '15px'}}></div>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 700 }} aria-label="customized table">
           <TableHead>
             <TableRow>
               <StyledTableCell>车位名称</StyledTableCell>
-              <StyledTableCell align="right">预定时间</StyledTableCell>
+              <StyledTableCell>车位地址</StyledTableCell>
+              <StyledTableCell align="right">开始时间</StyledTableCell>
+              <StyledTableCell align="right">结束时间</StyledTableCell>
               <StyledTableCell align="right">天/小时</StyledTableCell>
-              <StyledTableCell align="right">预定价格</StyledTableCell>
-              <StyledTableCell align="right">预定类型</StyledTableCell>
+              <StyledTableCell align="right">总价</StyledTableCell>
+              <StyledTableCell align="right">状态</StyledTableCell>
               <StyledTableCell align="right">操作</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map(row => (
+            {data.map(row => (
               <StyledTableRow key={row.name}>
                 <StyledTableCell component="th" scope="row">
-                  {row.name}
+                  {row.parking.name}
                 </StyledTableCell>
-                <StyledTableCell align="right">{row.calories}</StyledTableCell>
-                <StyledTableCell align="right">{row.fat}</StyledTableCell>
-                <StyledTableCell align="right">{row.carbs}</StyledTableCell>
-                <StyledTableCell align="right">{row.protein}</StyledTableCell>
+                <StyledTableCell component="th" scope="row">
+                  {row.parking.address}
+                </StyledTableCell>
+                <StyledTableCell align="right">
+                  {row.start_time}
+                </StyledTableCell>
+                <StyledTableCell align="right">{row.end_time}</StyledTableCell>
+                <StyledTableCell align="right">
+                  {row.type === "1" ? "天" : "小时"}
+                </StyledTableCell>
+                <StyledTableCell align="right">
+                  {row.total_prices}
+                </StyledTableCell>
+                <StyledTableCell align="right">
+                  {stateFun(row.state)}
+                </StyledTableCell>
                 <StyledTableCell align="right" component="th" scope="row">
                   <div>
-                    <Button onClick={() => setOpen(true)}>取消预定</Button>
-                    <Button onClick={() => setOpen(true)}>查看快照</Button>
+                    {row.isCancel && row.state === "1" && (
+                      <Button onClick={() => updateService(row, 3)}>
+                        取消预定
+                      </Button>
+                    )}
+                    {row.isCancel &&
+                      (
+                        // (row.state === "2" || row.state === "3") && 
+                        <Button onClick={() => updateService(row, 1)}>
+                          重新发起
+                        </Button>
+                      )}
+                    {row.isRefuse && row.state === "1" && (
+                      <Button onClick={() => updateService(row, 2)}>
+                        拒绝预定
+                      </Button>
+                    )}
+                    {row.isRefuse && row.state === "1" && (
+                      <Button onClick={() => updateService(row, 4)}>
+                        同意预定
+                      </Button>
+                    )}
+                    {row.isCancel && row.state === "4" && (
+                      <Button onClick={() => updateCommon(row)}>评价</Button>
+                    )}
+                    {/* {row.isCancel && (
+                      <Button
+                        onClick={() => [setMsgItem(row.parking), setOpen(true)]}
+                      >
+                        查看快照
+                      </Button>
+                    )} */}
                   </div>
                 </StyledTableCell>
               </StyledTableRow>
@@ -91,11 +205,8 @@ export default function CustomizedTables() {
         </Table>
       </TableContainer>
 
-      <div style={stackStyle}>
-        <Stack spacing={2}>
-          <Pagination count={10} />
-        </Stack>
-      </div>
+      <ReviewForm open={openDialog} onClick={commonClick} onClose={setOpenDialog}></ReviewForm>
+      <Drawer open={open} msg={msgItem} disabled={true} setOpen={setOpen} />
     </div>
   );
 }

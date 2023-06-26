@@ -7,7 +7,6 @@
 .google-msg {
   position: fixed;
   z-index: 10;
-  width: 320px;
   top: 142px;
   left: 10px;
 }

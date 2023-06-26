@@ -6,6 +6,7 @@ import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import fetch from "../../fetch";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
 import Pagination from "@mui/material/Pagination";
@@ -13,6 +14,8 @@ import Stack from "@mui/material/Stack";
 import Drawer from "@mui/material/Drawer";
 import { TextField, Radio, RadioGroup, FormControlLabel } from "@mui/material";
 import Box from "@mui/material/Box";
+import { useEffect } from "react";
+import { useState } from "react";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -34,31 +37,93 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-];
-
-const stackStyle = {
-  display: "flex",
-  justifyContent: "center",
-  marginTop: "16px",
-};
-
 export default function CustomizedTables() {
   const [open, setOpen] = React.useState(false);
+  const [data, setData] = useState([]);
+  const [issue, setIssue] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [state, setState] = useState("");
+  const [msg, setMsg] = useState("");
+  useEffect(() => {
+    fetch("/explain", {}, res => {
+      setData(res.data);
+    });
+  }, []);
+  useEffect(() => {
+    if (msg) {
+      setIssue(msg.issue);
+      setAnswer(msg.answer);
+      setState(msg.state);
+    } else {
+    }
+  }, [msg]);
+  useEffect(() => {
+    if(open){
+      return
+    }
+    setIssue("");
+    setAnswer("");
+    setState("");
+  }, [open]);
+  const addOrUpdate = () => {
+    const data = {
+      issue,
+      answer,
+      state,
+    };
+    if (msg) {
+      fetch(
+        "/explain/" + msg.id,
+        {
+          method: "PUT",
+          body: JSON.stringify(data),
+        },
+        res => {
+          setOpen(false);
+          fetch("/explain", {}, res => {
+            setData(res.data);
+          });
+        }
+      );
+      return;
+    }
+    fetch(
+      "/explain",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      res => {
+        setOpen(false);
+        fetch("/explain", {}, res => {
+          setData(res.data);
+        });
+      }
+    );
+  };
+
+  const deleteFun = () => {
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("确定要执行这个操作吗？")) {
+      fetch(
+        "/parking/" + msg.id,
+        {
+          method: "delete",
+        },
+        res => {
+          fetch("/explain", {}, res => {
+            setData(res.data);
+          });
+        }
+      );
+    }
+  };
   return (
     <div style={{ width: "97%", margin: "0 auto" }}>
+      <div style={{height: '15px'}}></div>
       <Button
         style={{ marginBottom: "10px" }}
-        onClick={() => setOpen(true)}
+        onClick={() => [setMsg(""), setOpen(true)]}
         variant="contained"
       >
         新增
@@ -74,17 +139,21 @@ export default function CustomizedTables() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map(row => (
+            {data.map(row => (
               <StyledTableRow key={row.name}>
                 <StyledTableCell component="th" scope="row">
-                  {row.name}
+                  {row.issue}
                 </StyledTableCell>
-                <StyledTableCell align="right">{row.calories}</StyledTableCell>
-                <StyledTableCell align="right">1</StyledTableCell>
+                <StyledTableCell align="right">{row.answer}</StyledTableCell>
+                <StyledTableCell align="right">
+                  {row.state == 1 ? "启用" : "禁用"}
+                </StyledTableCell>
                 <StyledTableCell align="right" component="th" scope="row">
                   <div>
-                    <Button onClick={() => setOpen(true)}>修改</Button>
-                    <Button onClick={() => setOpen(true)}>删除</Button>
+                    <Button onClick={() => [setMsg(row), setOpen(true)]}>
+                      修改
+                    </Button>
+                    <Button onClick={() => deleteFun()}>删除</Button>
                   </div>
                 </StyledTableCell>
               </StyledTableRow>
@@ -93,11 +162,6 @@ export default function CustomizedTables() {
         </Table>
       </TableContainer>
 
-      <div style={stackStyle}>
-        <Stack spacing={2}>
-          <Pagination count={10} />
-        </Stack>
-      </div>
       <Drawer width="400px" anchor={"right"} open={open}>
         <div className="drawer">
           <div>
@@ -112,29 +176,32 @@ export default function CustomizedTables() {
               <TextField
                 id="outlined-controlled"
                 label="问题"
+                value={issue}
                 variant="standard"
                 onChange={event => {
-                  // setName(event.target.value);
+                  setIssue(event.target.value);
                 }}
               />
               <TextField
                 id="outlined-uncontrolled"
                 variant="standard"
                 label="答案"
-                defaultValue="foo"
+                value={answer}
+                onChange={event => {
+                  setAnswer(event.target.value);
+                }}
               />
               <p>状态</p>
-              <RadioGroup aria-label="answer" name="answer">
-                <FormControlLabel
-                  value="answerA"
-                  control={<Radio />}
-                  label="启用"
-                />
-                <FormControlLabel
-                  value="answerB"
-                  control={<Radio />}
-                  label="禁用"
-                />
+              <RadioGroup
+                aria-label="answer"
+                onChange={event => {
+                  setState(event.target.value);
+                }}
+                value={state}
+                name="answer"
+              >
+                <FormControlLabel value="1" control={<Radio />} label="启用" />
+                <FormControlLabel value="2" control={<Radio />} label="禁用" />
               </RadioGroup>
             </Box>
           </div>
@@ -142,8 +209,12 @@ export default function CustomizedTables() {
             <Button variant="contained" onClick={() => setOpen(false)}>
               取消
             </Button>
-            <Button style={{ marginLeft: "10px" }} variant="contained">
-              修改
+            <Button
+              style={{ marginLeft: "10px" }}
+              onClick={addOrUpdate}
+              variant="contained"
+            >
+              {msg ? "修改" : "新增"}
             </Button>
           </div>
         </div>

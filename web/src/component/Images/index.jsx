@@ -69,7 +69,7 @@ const itemData = [
 ];
 export default function TitlebarBelowMasonryImageList() {
   return (
-    <Box>
+    <Box style={{ height: "auto !important"}}>
       <ImageList variant="masonry" cols={4} gap={8}>
         {itemData.map((item) => (
           <ImageListItem key={item.img}>

@@ -9,6 +9,7 @@ import Stall from "./component/Stall";
 import History from "./component/History";
 import Doubt from "./component/Doubt";
 import Info from "./component/Info";
+import Favorite from "./component/Favorite";
 
 import Navbar from "./component/Navbar"
 import './App.css';
@@ -24,10 +25,11 @@ function App() {
         <Route exact path="/register" element={[navbar, <Register />]} />
         <Route exact path="/pay" element={[navbar, <Pay />]} />
         <Route exact path="/table" element={[navbar, <Table />]}>
-          <Route path="stall" element={<Stall />} />
+          <Route path="" element={<Stall />} />
           <Route path="history" element={<History />} />
           <Route path="doubt" element={<Doubt />} />
           <Route path="info" element={<Info />} />
+          <Route path="favorite" element={<Favorite />} />
         </Route>
       </Routes>
     </Router>

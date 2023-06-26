@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Button, TextField } from "@mui/material";
 import { AccountCircle, Lock } from "@mui/icons-material";
+import fetch from '../../fetch'
 import "./index.scss";
 
 function Login() {
-  const [username, setUsername] = useState("");
+  const [nickname, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleUsernameChange = event => {
@@ -17,24 +18,19 @@ function Login() {
 
   const handleSubmit = event => {
     event.preventDefault();
-    console.log('fefwefe')
-    fetch("http://localhost:8080/user/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+    fetch('/user/login', {
+      method: 'POST',
       body: JSON.stringify({
-        username: username,
-        password: password,
-      }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        // handle response data
+        nickname: nickname,
+        password
       })
-      .catch(error => {
-        // handle error
-      });
+    },res =>{
+      if(res.code === '200'){
+        alert('登录成功')
+        sessionStorage.userInfo = JSON.stringify(res.data)
+        window.location = "/"
+      }
+    })
   };
 
   return (
@@ -43,13 +39,13 @@ function Login() {
         <img src="./images/background.png" alt="Login image" />
       </div>
       <div className="form-container">
-        <h2>Welcome back!</h2>
+        <h2>Login</h2>
 
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Username"
+            label="Nickname"
             variant="outlined"
-            value={username}
+            value={nickname}
             onChange={handleUsernameChange}
             fullWidth
             InputProps={{

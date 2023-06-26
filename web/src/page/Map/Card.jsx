@@ -7,23 +7,107 @@ import {
   CardContent,
   CardHeader,
   CardMedia,
-  IconButton,
   Typography,
+  Rating,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import ClearIcon from "@mui/icons-material/Clear";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import fetch from "../../fetch";
+import NewMap from "../../component/NewMap";
 import { red } from "@mui/material/colors";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import "./card.scss";
+import { useEffect } from "react";
+import { useState } from "react";
+
+const settings = {
+  dots: true,
+  infinite: true,
+  speed: 500,
+  slidesToShow: 1,
+  slidesToScroll: 1,
+};
+
+const MyCarousel = ({ images }) => {
+  return (
+    <Slider {...settings}>
+      {images.map((img, i) => (
+        <div key={i}>
+          <img src={img} alt={img} />
+        </div>
+      ))}
+    </Slider>
+  );
+};
+
+function ReviewList({ reviews, reveinfos }) {
+  return (
+    <div style={{ marginTop: "20px" }}>
+      {(reviews || []).map((review, index) => (
+        <Card key={review.id} style={{ marginTop: "20px" }}>
+          <CardHeader
+            avatar={
+              <Avatar
+                sx={{ bgcolor: red[500] }}
+                alt={reveinfos[index]?.name}
+                aria-label="recipe"
+                src={"few"}
+              />
+            }
+            title={review.user_name}
+            subheader={
+              <>
+                <Rating
+                  name="review_rating"
+                  value={review.star}
+                  precision={0.5}
+                  size="small"
+                  readOnly
+                  style={{ marginRight: "10px" }}
+                />
+                {new Date(review.updated_at).toLocaleDateString()}
+              </>
+            }
+          />
+          <CardContent>
+            <Typography variant="body2" color="text.secondary">
+              {review.comment}
+            </Typography>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
 
 export default function RecipeReviewCard(props) {
   const history = useNavigate();
+  const message = React.useMemo(() => props.message || {}, [props.message]);
+  const [reveinfos, setReveInfos] = useState(
+    new Array((message.reserve || []).length).fill(null)
+  );
+
+  var userInfo = {};
+  try {
+    userInfo = JSON.parse(sessionStorage.userInfo);
+  } catch (error) {}
+
+  const [info, setInfo] = useState({});
+  const [isFavorite, setIsFavorite] = useState({});
+  const [reviews, setReviews] = useState([]);
+  const [indexFa, setIndexFa] = useState(0);
   function Pay() {
+    var mess = JSON.parse(JSON.stringify(message));
+    mess.info = info;
+    sessionStorage.item = JSON.stringify(mess);
     history("/pay");
   }
-  const message = React.useMemo(() => props.message || {}, [props.message]);
+
   function copyCode() {
-    const href = window.location.href + `?lat=${message.lat}&lng=${message.lng}`;
+    const href =
+      window.location.href + `?lat=${message.lat}&lng=${message.lng}`;
     // 创建一个新的ClipboardItem并设置要复制的代码块的内容
     var item = new ClipboardItem({
       "text/plain": new Blob([href], { type: "text/plain" }),
@@ -32,49 +116,130 @@ export default function RecipeReviewCard(props) {
     navigator.clipboard.write([item]);
     alert("复制成功，粘贴即可分享");
   }
-  return (
-    <Card>
-      <div>
-        <div className="card-gb">
-          <ClearIcon onClick={props.clear}></ClearIcon>
-        </div>
-        <CardHeader
-          avatar={
-            <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-              R
-            </Avatar>
-          }
-          action={
-            <IconButton aria-label="settings">
-              <MoreVertIcon />
-            </IconButton>
-          }
-          title="Shrimp and Chorizo Paella"
-          subheader="September 14, 2016"
-        />
-      </div>
 
-      <CardMedia
-        component="img"
-        height="194"
-        image="https://img1.baidu.com/it/u=2463514011,1142503686&fm=253&app=138&size=w931&n=0&f=JPEG&fmt=auto?sec=1686070800&t=e59f19e7d3db7e50651bf9e3491b1875"
-        alt="Paella dish"
-      />
-      <CardContent>
-        <Typography variant="body2" color="text.secondary">
-          This impressive paella is a perfect party dish and a fun meal to cook
-          together with your guests. Add 1 cup of frozen peas along with the
-          mussels, if you like.
-        </Typography>
-      </CardContent>
-      <CardActions disableSpacing style={{ float: "right" }}>
-        <Button onClick={copyCode} size="small" color="primary">
-          分享
-        </Button>
-        <Button onClick={Pay} size="small" color="primary">
-          预定
-        </Button>
-      </CardActions>
-    </Card>
+  function favoriteLink() {
+    if (isFavorite) {
+      fetch(
+        `/favorite/${message.id}`,
+        {
+          method: "DELETE",
+        },
+        res => {
+          setIndexFa(res => res + 1);
+        }
+      );
+      return;
+    }
+    if (!userInfo.id) {
+      return "未登录";
+    }
+    const data = {
+      user_id: userInfo.id,
+      parking_id: message.id,
+    };
+
+    fetch(
+      `/favorite`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      res => {
+        setIndexFa(res => res + 1);
+      }
+    );
+  }
+  useEffect(() => {
+    fetch(`/user/${message.user_id}`, {}, res => {
+      setInfo(res.data);
+    });
+    setReviews(message.reserve.filter(item => item.comment));
+    message.reserve
+      .filter(item => item.comment)
+      .map((item, index) => {
+        fetch(`/user/${item.user_id}`, {}, res => {
+          var data = reveinfos;
+          data[index] = res.data;
+          setReveInfos(data);
+        });
+      });
+  }, [message]);
+
+  useEffect(() => {
+    fetch(`favorite?id=${userInfo.id}`, {}, res => {
+      setIsFavorite(!!res.data.find(item => item.parkingId === message.id));
+    });
+  }, [indexFa,message]);
+
+  return (
+    <div>
+      {message.name && (
+        <Card>
+          <div>
+            <div className="card-gb">
+              <ClearIcon onClick={props.clear}></ClearIcon>
+            </div>
+            <CardHeader
+              avatar={
+                <Avatar
+                  alt={info.name}
+                  src={info.avatar}
+                  sx={{ bgcolor: red[500] }}
+                  aria-label="recipe"
+                >
+                  {info?.name && info?.name[0]}
+                </Avatar>
+              }
+              title={info?.name}
+              subheader={info?.intro}
+            />
+          </div>
+          <MyCarousel images={message.images}></MyCarousel>
+          <CardContent>
+            <Typography variant="body2" color="text.secondary">
+              <p style={{ fontSize: "24px", color: "#333" }}>{message.name}</p>
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              <p style={{ color: "rgb(64 105 227)", marginTop: "7px" }}>
+                Description
+              </p>
+              {message.description}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              <p style={{ color: "rgb(64 105 227)", marginTop: "7px" }}>
+                Address
+              </p>
+              {message.address}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              <div className="typo-newMap">
+                <NewMap
+                  lng={message.lng}
+                  lat={message.lat}
+                  onClick={() => {}}
+                ></NewMap>
+              </div>
+            </Typography>
+          </CardContent>
+          <CardActions disableSpacing style={{ float: "right" }}>
+            <Button onClick={copyCode} size="small" color="primary">
+              分享
+            </Button>
+            <Button onClick={favoriteLink} size="small" color="primary">
+              {isFavorite ? "已收藏" : "收藏"}
+            </Button>
+            <Button onClick={Pay} size="small" color="primary">
+              预定
+            </Button>
+          </CardActions>
+          <CardContent>
+            <Typography variant="body2" color="text.secondary">
+              <h4>Reviews</h4>
+              <ReviewList reviews={reviews} reveinfos={reveinfos} />
+            </Typography>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }

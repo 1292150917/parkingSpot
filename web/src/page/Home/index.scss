@@ -7,11 +7,18 @@
     margin: 0 auto;
   }
 }
+
+.home-banner-flex{
+  background: url(https://img0.baidu.com/it/u=713751486,276319268&fm=253&fmt=auto&app=120&f=JPEG?w=1422&h=800);
+  background-size: 100% 100%;
+  background-attachment: fixed;
+}
 .home > div:nth-of-type(2),
 .home > div:nth-of-type(4) {
   
   background: url(https://img.freepik.com/free-vector/white-gray-background-with-overlay-lines_1017-25096.jpg?w=2000&t=st=1686109079~exp=1686109679~hmac=b76a5a2b223e8a44838707ee02aa13178782fadea178645cc32c25d34aeba079);
   background-size: 100% 100%;
+  background-attachment: fixed;
 
 }
 .home-banner img {

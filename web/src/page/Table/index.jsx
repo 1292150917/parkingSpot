@@ -12,6 +12,9 @@ import PeopleIcon from "@mui/icons-material/People";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import LayersIcon from "@mui/icons-material/Layers";
 import { useNavigate, Outlet } from "react-router-dom";
+import HowToRegIcon from '@mui/icons-material/HowToReg';
+import AllInboxIcon from '@mui/icons-material/AllInbox';
+import './index.scss'
 
 const drawerWidth = 240;
 
@@ -44,7 +47,7 @@ function ListItemLink(props) {
 
 const DashboardLayout = ({ children }) => {
   return (
-    <div style={{}}>
+    <div style={{}} className="table-height">
       <Box sx={{ display: "flex" }}>
         <SideNav
           variant="permanent"
@@ -57,7 +60,7 @@ const DashboardLayout = ({ children }) => {
           open={true}
         >
           <List>
-            <ListItemLink to="/table/stall">
+            <ListItemLink to="/table">
               <ListItemIcon>
                 <DashboardIcon />
               </ListItemIcon>
@@ -69,6 +72,12 @@ const DashboardLayout = ({ children }) => {
               </ListItemIcon>
               <ListItemText primary="预定历史" />
             </ListItemLink>
+            <ListItemLink to="/table/favorite">
+              <ListItemIcon>
+                <AllInboxIcon />
+              </ListItemIcon>
+              <ListItemText primary="我的收藏" />
+            </ListItemLink>
             <ListItemLink to="/table/doubt">
               <ListItemIcon>
                 <BarChartIcon />
@@ -77,14 +86,20 @@ const DashboardLayout = ({ children }) => {
             </ListItemLink>
             <ListItemLink to="/table/info">
               <ListItemIcon>
-                <LayersIcon />
+                <HowToRegIcon />
               </ListItemIcon>
               <ListItemText primary="个人资料" />
+            </ListItemLink>
+            <ListItemLink to="/login">
+              <ListItemIcon>
+                <LayersIcon />
+              </ListItemIcon>
+              <ListItemText primary="退出" />
             </ListItemLink>
           </List>
         </SideNav>
         <Content>
-          <div style={{height: '15px'}}></div>
+          
           <Outlet />
         </Content>
       </Box>

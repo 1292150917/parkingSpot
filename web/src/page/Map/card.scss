@@ -8,6 +8,14 @@
   svg {
     font-size: 18px;
     position: relative;
-    top: -6px;
+    cursor: pointer;
+    top: 2px;
+    right: 6px;
+  }
+}
+.typo-newMap{
+  // height: 170px;
+  > div{
+    height: 100% !important;
   }
 }

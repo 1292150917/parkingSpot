@@ -8,6 +8,7 @@ import {
   Lock,
   VisibilityOff,
 } from "@mui/icons-material";
+import fetch from "../../fetch";
 import "./index.scss";
 
 function Register() {
@@ -62,8 +63,29 @@ function Register() {
   };
   const handleSubmit = event => {
     event.preventDefault();
-    console.log(
-      `Nickname: ${nickname}, Name: ${name}, Intro: ${intro}, Phone: ${phone}, Category: ${category}, Password: ${password}`
+    const data = {
+      nickname,
+      name,
+      intro,
+      phone,
+      category,
+      password,
+    };
+    if (Object.values(data).filter(item => !item).length) {
+      return alert("信息输入完整");
+    }
+    if (password !== confirmPassword) {
+      return alert("两次密码不一致");
+    }
+    fetch(
+      "/user/register",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      res => {
+        alert("success");
+      }
     );
   };
 
@@ -73,7 +95,7 @@ function Register() {
         <img src="./images/background.png" alt="Login image" />
       </div>
       <div className="form-container">
-        <h2>Welcome back!</h2>
+        <h2>Regoster</h2>
         <form onSubmit={handleSubmit}>
           <TextField
             label="Nickname"
@@ -144,16 +166,9 @@ function Register() {
             type={showPassword ? "text" : "password"}
             InputProps={{
               startAdornment: <Lock color="disabled" />,
-              endAdornment: (
-                <VisibilityOff
-                  color="disabled"
-                  onClick={handleClickShowPassword}
-                  onMouseDown={handlePasswordChange}
-                />
-              ),
             }}
             value={confirmPassword}
-            onChange={handleClickShowConfirmPassword}
+            onChange={handleConfirmPasswordChange}
             fullWidth
             margin="normal"
           />

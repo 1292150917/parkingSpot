@@ -1,109 +1,272 @@
 import React, { useState } from "react";
-import { Button, TextField } from "@mui/material";
-import { AccountCircle, Lock } from "@mui/icons-material";
+import {
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  Tabs,
+  Tab,
+} from "@mui/material";
+import {
+  AccountCircle,
+  Person,
+  Description,
+  Phone,
+  Lock,
+  VisibilityOff,
+} from "@mui/icons-material";
+import fetch from "../../fetch";
 import "./index.scss";
 
-function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+let userInfo = sessionStorage.userInfo
+  ? JSON.parse(sessionStorage.userInfo)
+  : {};
 
-  const handleUsernameChange = event => {
-    setUsername(event.target.value);
+function Register() {
+  const [nickname, setNickname] = useState(userInfo.nickname || "");
+  const [name, setName] = useState(userInfo.name || "");
+  const [intro, setIntro] = useState(userInfo.intro || "");
+  const [phone, setPhone] = useState(userInfo.phone || "");
+  const [category, setCategory] = useState(userInfo.category || "");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [bankCard, setBankCard] = useState("");
+  const [bankCode, setBankCode] = useState("");
+  const [bankTime, setBankTime] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
+
+  const bankClick = () => {
+    console.log(bankCard, bankCode, bankTime);
+    const data = {
+      ...userInfo,
+      bank_card: bankCard,
+      bank_code: bankCode,
+      bank_time: bankTime,
+    };
+    fetch(
+      "/user/" + userInfo.id,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+      res => {
+        alert("success");
+        sessionStorage.userInfo = JSON.stringify({
+          ...userInfo,
+          ...data,
+        });
+        window.location.reload();
+      }
+    );
+  };
+
+  const handleNicknameChange = event => {
+    setNickname(event.target.value);
+  };
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleNameChange = event => {
+    setName(event.target.value);
+  };
+
+  const handleIntroChange = event => {
+    setIntro(event.target.value);
+  };
+
+  const handlePhoneChange = event => {
+    setPhone(event.target.value);
+  };
+
+  const handleCategoryChange = event => {
+    setCategory(event.target.value);
   };
 
   const handlePasswordChange = event => {
     setPassword(event.target.value);
   };
 
+  const handleMouseDownPassword = event => {
+    event.preventDefault();
+  };
+
   const handleSubmit = event => {
     event.preventDefault();
-    // console.log(Username: ${username}, Password: ${password});
+    const data = {
+      ...userInfo,
+      nickname,
+      name,
+      intro,
+      phone,
+      category,
+      password,
+    };
+    if (Object.values(data).filter(item => !item).length) {
+      return alert("信息输入完整");
+    }
+    if (password !== confirmPassword) {
+      return alert("两次密码不一致");
+    }
+    fetch(
+      "/user/" + userInfo.id,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      },
+      res => {
+        alert("success");
+        sessionStorage.userInfo = JSON.stringify({
+          ...userInfo,
+          ...data,
+        });
+        window.location.reload();
+      }
+    );
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
   };
 
   return (
     <div className="info-container">
-      <div className="info-form-container">
-        <h2>Welcome back!</h2>
-
-        <form onSubmit={handleSubmit}>
+      <Tabs value={tabValue} onChange={handleTabChange}>
+        <Tab label="个人信息修改" />
+        <Tab label="银行卡信息绑定" />
+      </Tabs>
+      {tabValue === 0 ? (
+        <div style={{ width: "100%", flex: 1 }}>
+          <form onSubmit={handleSubmit}>
+            <TextField
+              label="Nickname"
+              variant="outlined"
+              value={nickname}
+              disabled
+              onChange={handleNicknameChange}
+              fullWidth
+              InputProps={{
+                startAdornment: <AccountCircle color="disabled" />,
+              }}
+              margin="normal"
+            />
+            <TextField
+              label="Name"
+              variant="outlined"
+              value={name}
+              onChange={handleNameChange}
+              fullWidth
+              InputProps={{
+                startAdornment: <Person color="disabled" />,
+              }}
+              margin="normal"
+            />
+            <TextField
+              label="Intro"
+              variant="outlined"
+              value={intro}
+              onChange={handleIntroChange}
+              fullWidth
+              InputProps={{
+                startAdornment: <Description color="disabled" />,
+              }}
+              margin="normal"
+            />
+            <TextField
+              label="Phone"
+              variant="outlined"
+              value={phone}
+              onChange={handlePhoneChange}
+              fullWidth
+              InputProps={{
+                startAdornment: <Phone color="disabled" />,
+              }}
+              margin="normal"
+            />
+            <TextField
+              label="Password"
+              variant="outlined"
+              value={password}
+              type={showPassword ? "text" : "password"}
+              InputProps={{
+                startAdornment: <Lock color="disabled" />,
+                endAdornment: (
+                  <VisibilityOff
+                    color="disabled"
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                  />
+                ),
+              }}
+              onChange={handlePasswordChange}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Confirm Password"
+              variant="outlined"
+              value={confirmPassword}
+              type={showPassword ? "text" : "password"}
+              InputProps={{
+                startAdornment: <Lock color="disabled" />,
+                endAdornment: (
+                  <VisibilityOff
+                    color="disabled"
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                  />
+                ),
+              }}
+              onChange={event => setConfirmPassword(event.target.value)}
+              fullWidth
+              margin="normal"
+            />
+            <Button variant="contained" color="primary" type="submit">
+              Submit
+            </Button>
+          </form>
+        </div>
+      ) : (
+        <div style={{ marginLeft: "20px" }}>
           <TextField
-            label="nickname"
+            label="卡号"
             variant="outlined"
-            value={username}
-            onChange={handleUsernameChange}
             fullWidth
-            InputProps={{
-              startAdornment: <AccountCircle color="disabled" />,
-            }}
+            value={bankCard}
+            onChange={event => setBankCard(event.target.value)}
             margin="normal"
           />
           <TextField
-            label="name"
+            label="code"
             variant="outlined"
-            type="password"
-            value={password}
-            onChange={handlePasswordChange}
-            InputProps={{
-              startAdornment: <Lock color="disabled" />,
-            }}
             fullWidth
+            value={bankCode}
+            onChange={event => setBankCode(event.target.value)}
             margin="normal"
           />
           <TextField
-            label="intro"
+            label="时间"
             variant="outlined"
-            type="password"
-            value={password}
-            onChange={handlePasswordChange}
-            InputProps={{
-              startAdornment: <Lock color="disabled" />,
-            }}
             fullWidth
+            value={bankTime}
+            onChange={event => setBankTime(event.target.value)}
             margin="normal"
           />
-          <TextField
-            label="phone"
-            variant="outlined"
-            type="password"
-            value={password}
-            onChange={handlePasswordChange}
-            InputProps={{
-              startAdornment: <Lock color="disabled" />,
-            }}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Password"
-            variant="outlined"
-            type="password"
-            value={password}
-            onChange={handlePasswordChange}
-            InputProps={{
-              startAdornment: <Lock color="disabled" />,
-            }}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="confirm Password"
-            variant="outlined"
-            type="password"
-            value={password}
-            onChange={handlePasswordChange}
-            InputProps={{
-              startAdornment: <Lock color="disabled" />,
-            }}
-            fullWidth
-            margin="normal"
-          />
-          <Button variant="contained" color="primary" type="submit">
-            修改
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={bankClick}
+            type="submit"
+          >
+            Submit
           </Button>
-        </form>
-      </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export default Login;
+export default Register;

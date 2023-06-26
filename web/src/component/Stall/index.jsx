@@ -10,6 +10,7 @@ import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
+import fetch from "../../fetch";
 import Drawer from "../../component/Drawer";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -32,18 +33,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-];
-
 const stackStyle = {
   display: "flex",
   justifyContent: "center",
@@ -52,9 +41,40 @@ const stackStyle = {
 
 export default function CustomizedTables() {
   const [open, setOpen] = React.useState(false);
+  const [parkings, setParkings] = React.useState([]);
+  const [msgItem, setMsgItem] = React.useState("");
+  React.useEffect(() => {
+    if (open) {
+      return;
+    }
+    fetch("/parking", {}, res => {
+      setParkings(res.data);
+    });
+  }, [open]);
+  const deleteFun = row => {
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("确定要执行这个操作吗？")) {
+      fetch(
+        "/parking/" + row.id,
+        {
+          method: "delete",
+        },
+        res => {
+          fetch("/parking", {}, res => {
+            setParkings(res.data);
+          });
+        }
+      );
+    }
+  };
   return (
     <div style={{ width: "97%", margin: "0 auto" }}>
-      <Button onClick={() => setOpen(true)} style={{ marginBottom: "10px" }} variant="contained">
+      <div style={{height: '15px'}}></div>
+      <Button
+        onClick={() => [setMsgItem(""), setOpen(true)]}
+        style={{ marginBottom: "10px" }}
+        variant="contained"
+      >
         新增
       </Button>
       <TableContainer component={Paper}>
@@ -66,29 +86,36 @@ export default function CustomizedTables() {
               <StyledTableCell align="right">车位地址</StyledTableCell>
               <StyledTableCell align="right">车位价格/天</StyledTableCell>
               <StyledTableCell align="right">车位价格/小时</StyledTableCell>
-              <StyledTableCell align="right">停放类型</StyledTableCell>
               <StyledTableCell align="right">地址</StyledTableCell>
-              <StyledTableCell align="right">启用</StyledTableCell>
               <StyledTableCell align="right">操作</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map(row => (
+            {parkings.map(row => (
               <StyledTableRow key={row.name}>
                 <StyledTableCell component="th" scope="row">
                   {row.name}
                 </StyledTableCell>
-                <StyledTableCell align="right">{row.calories}</StyledTableCell>
-                <StyledTableCell align="right">{row.fat}</StyledTableCell>
-                <StyledTableCell align="right">{row.carbs}</StyledTableCell>
-                <StyledTableCell align="right">{row.protein}</StyledTableCell>
-                <StyledTableCell align="right">{row.protein}</StyledTableCell>
-                <StyledTableCell align="right">{row.protein}</StyledTableCell>
-                <StyledTableCell align="right">{row.protein}</StyledTableCell>
+                <StyledTableCell align="right">
+                  {row.description}
+                </StyledTableCell>
+                <StyledTableCell align="right">{row.address}</StyledTableCell>
+                <StyledTableCell align="right">
+                  {row.price_per_day}
+                </StyledTableCell>
+                <StyledTableCell align="right">
+                  {row.price_per_hour}
+                </StyledTableCell>
+                <StyledTableCell align="right">
+                  {row.latitude}
+                  {row.longitude}
+                </StyledTableCell>
                 <StyledTableCell align="right" component="th" scope="row">
                   <div>
-                    <Button onClick={() => setOpen(true)}>成功</Button>
-                    <Button onClick={() => setOpen(true)}>拒绝</Button>
+                    <Button onClick={() => [setMsgItem(row), setOpen(true)]}>
+                      update{" "}
+                    </Button>
+                    <Button onClick={() => deleteFun(row)}>delete</Button>
                   </div>
                 </StyledTableCell>
               </StyledTableRow>
@@ -96,13 +123,7 @@ export default function CustomizedTables() {
           </TableBody>
         </Table>
       </TableContainer>
-
-      <div style={stackStyle}>
-        <Stack spacing={2}>
-          <Pagination count={10} />
-        </Stack>
-      </div>
-      <Drawer open={open} setOpen={setOpen} />
+      <Drawer open={open} msg={msgItem} setOpen={setOpen} />
     </div>
   );
 }

@@ -1,9 +1,15 @@
-$primary-color: #2196f3;
+$primary-color: #fff;
 
 .info-container {
-  display: flex;
-  height: calc(100vh - 50px);
+  height: calc(100vh - 57px);
   font-family: "Montserrat", sans-serif;
+  background: url('https://images.pexels.com/photos/316466/pexels-photo-316466.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+  background-size: 100%;
+  width: 100%;
+  form {
+    width: 500px;
+    margin-left: 20px;
+  }
 }
 
 .image-container {
@@ -29,6 +35,9 @@ $primary-color: #2196f3;
   background-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(2px);
   box-shadow: 0px 0px 24px rgba(0, 0, 0, 0.1);
+  .form-container {
+    width: 100% !important;
+  }
 
   h2 {
     text-align: center;
