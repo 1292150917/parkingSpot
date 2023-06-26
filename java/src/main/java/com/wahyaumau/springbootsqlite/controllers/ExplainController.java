@@ -1,14 +1,9 @@
 package com.wahyaumau.springbootsqlite.controllers;
-import com.wahyaumau.springbootsqlite.entities.Author;
 import com.wahyaumau.springbootsqlite.entities.Explain;
 import com.wahyaumau.springbootsqlite.models.BaseResponse;
 import com.wahyaumau.springbootsqlite.services.ExplainService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/explain")
@@ -32,7 +27,7 @@ public class ExplainController {
     }
 
     @GetMapping
-    public List<Explain> findAll() {
+    public BaseResponse findAll() {
         return explainService.findAll();
     }
 }

@@ -13,12 +13,13 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public BaseResponse login(String nickname, String password) {
-        User user = userRepository.findByNickname(nickname);
-        if (user == null || !user.getPassword().equals(password)) {
+    public BaseResponse login(User user) {
+        User new_user = userRepository.findByNickname(user.getNickname());
+
+        if (new_user == null || !new_user.getPassword().equals(user.getPassword())) {
             return new BaseResponse("502","Invalid nickname or password");
         }
-        return new BaseResponse("200","", user);
+        return new BaseResponse("200","", new_user);
     }
 
     public BaseResponse register(User user) {
@@ -54,4 +55,9 @@ public class UserService {
     public List<User> findAll() {
         return userRepository.findAll();
     }
+
+    public BaseResponse findById(Long id) {
+        return new BaseResponse("200","", userRepository.findById(id));
+    }
+
 }

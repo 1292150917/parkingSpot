@@ -1,6 +1,5 @@
 package com.wahyaumau.springbootsqlite.controllers;
 
-import com.wahyaumau.springbootsqlite.entities.Book;
 import com.wahyaumau.springbootsqlite.entities.User;
 import com.wahyaumau.springbootsqlite.models.BaseResponse;
 import com.wahyaumau.springbootsqlite.services.UserService;
@@ -16,12 +15,13 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/login")
-    public BaseResponse login(@RequestParam String nickname, @RequestParam String password) {
-        return userService.login(nickname, password);
+    public BaseResponse login(@RequestBody User user) {
+        return userService.login(user);
     }
 
     @PostMapping("/register")
     public BaseResponse register(@RequestBody User user) {
+        System.out.println(user);
         return userService.register(user);
     }
 
@@ -38,5 +38,10 @@ public class UserController {
     @GetMapping
     public List<User> findAll() {
         return userService.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public BaseResponse findById(@PathVariable Long id) {
+        return userService.findById(id);
     }
 }

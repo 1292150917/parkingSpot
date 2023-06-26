@@ -1,3 +1,5 @@
+package com.wahyaumau.springbootsqlite.controllers;
+
 import com.wahyaumau.springbootsqlite.entities.Stall;
 import com.wahyaumau.springbootsqlite.services.StallService;
 import org.springframework.beans.factory.annotation.Autowired;

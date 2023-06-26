@@ -28,6 +28,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+			<optional>provided</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.xerial</groupId>

@@ -38,6 +38,22 @@ public class User {
     @Column(nullable = false)
     private String category;
 
+//    消费积分
+//    @Column(nullable = false)
+//    private String point_minute;
+
+//    @Column(nullable = false)
+//    private String bank_card;
+//
+//    @Column(nullable = false)
+//    private String bank_code;
+//
+//    @Column(nullable = false)
+//    private String bank_time;
+//
+//    @Column(nullable = false)
+//    private String bank_name;
+//
 //    @Column(name = "created_at", updatable = false, nullable = false)
 //    @JsonProperty("created_at")
 //    private LocalDateTime createdAt;
@@ -45,7 +61,7 @@ public class User {
 //    @Column(name = "updated_at", nullable = false)
 //    @JsonProperty("updated_at")
 //    private LocalDateTime updatedAt;
-
+//
 //    @PrePersist
 //    private void onCreate(){
 //        createdAt = LocalDateTime.now();
